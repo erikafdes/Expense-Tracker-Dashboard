@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Spendly – Expense Tracker Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.3.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#f8f9fb;min-height:100vh;color:#111827}
+/* ── Nav ── */
+.nav{background:#fff;border-bottom:1px solid #e8eaed;padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.nav-left{display:flex;align-items:center;gap:10px}
+.logo-mark{width:34px;height:34px;background:#10b981;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.logo-mark i{color:#fff;font-size:17px}
+.app-name{font-size:15px;font-weight:600;color:#111827;letter-spacing:-.2px}
+.nav-right{display:flex;align-items:center;gap:14px}
+.nav-pill{font-size:13px;color:#6b7280;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:5px 13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:border-color .15s;user-select:none}
+.nav-pill:hover{border-color:#10b981;color:#059669}
+.avatar{width:36px;height:36px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #a7f3d0;transition:border-color .15s}
+.avatar:hover{border-color:#10b981}
+.avatar i{color:#059669;font-size:18px}
+/* ── Page ── */
+.page{max-width:960px;margin:0 auto;padding:32px 24px 80px}
+.greeting{margin-bottom:26px}
+.greeting h2{font-size:21px;font-weight:600;color:#111827;margin-bottom:3px}
+.greeting p{font-size:13px;color:#9ca3af}
+/* ── Stat cards ── */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:24px}
+.card{background:#fff;border:1px solid #e8eaed;border-radius:14px;padding:20px;transition:border-color .2s,transform .15s,box-shadow .2s;cursor:default}
+.card:hover{border-color:#d1d5db;transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.card-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.ci-green{background:#d1fae5}.ci-green i{color:#059669}
+.ci-blue{background:#dbeafe}.ci-blue i{color:#3b82f6}
+.ci-red{background:#fee2e2}.ci-red i{color:#ef4444}
+.ci-amber{background:#fef3c7}.ci-amber i{color:#f59e0b}
+.card-icon i{font-size:18px}
+.card-label{font-size:11px;color:#9ca3af;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+.card-value{font-size:23px;font-weight:600;color:#111827;letter-spacing:-.6px;margin-bottom:5px}
+.card-delta{font-size:12px;display:flex;align-items:center;gap:4px;color:#6b7280}
+.card-delta.up{color:#10b981}.card-delta.dn{color:#ef4444}
+/* ── Charts row ── */
+.charts-row{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:20px}
+.panel{background:#fff;border:1px solid #e8eaed;border-radius:14px;padding:22px}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.panel-title{font-size:14px;font-weight:600;color:#111827}
+.panel-sub{font-size:12px;color:#9ca3af;margin-top:2px}
+.legend-row{display:flex;gap:14px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:#6b7280}
+.leg-sq{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+/* ── Pie legend ── */
+.pie-chart-wrap{display:flex;flex-direction:column;gap:14px}
+.pie-legend{display:flex;flex-direction:column;gap:8px}
+.pie-leg{display:flex;align-items:center;justify-content:space-between;font-size:12.5px}
+.pie-leg-left{display:flex;align-items:center;gap:7px;color:#374151}
+.pie-leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.pie-leg-pct{color:#111827;font-weight:500}
+/* ── Tx table ── */
+.tx-panel{background:#fff;border:1px solid #e8eaed;border-radius:14px;padding:22px}
+.tx-table{width:100%;border-collapse:collapse;min-width:560px}
+.tx-table th{font-size:11px;font-weight:500;color:#9ca3af;text-align:left;padding:0 12px 12px;border-bottom:1px solid #f1f3f5;text-transform:uppercase;letter-spacing:.05em}
+.tx-table td{padding:12px;border-bottom:1px solid #f9fafb;vertical-align:middle}
+.tx-table tr:last-child td{border-bottom:none}
+.tx-table tr:hover td{background:#fafafa}
+.tx-wrap{overflow-x:auto}
+.tx-cat{display:flex;align-items:center;gap:10px}
+.tx-cat-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tx-cat-icon i{font-size:16px}
+.tx-cat-name{font-size:13px;font-weight:500;color:#111827}
+.tx-cat-note{font-size:11.5px;color:#9ca3af;margin-top:1px}
+.tx-date{font-size:12.5px;color:#6b7280;white-space:nowrap}
+.tx-amt{font-size:13.5px;font-weight:600;white-space:nowrap}
+.tx-amt.neg{color:#ef4444}.tx-amt.pos{color:#10b981}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.badge.completed{background:#d1fae5;color:#065f46}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.failed{background:#fee2e2;color:#991b1b}
+/* ── FAB ── */
+.fab{position:fixed;bottom:30px;right:30px;width:52px;height:52px;border-radius:50%;background:#10b981;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(16,185,129,.4);transition:transform .15s,background .15s;z-index:50}
+.fab:hover{background:#059669;transform:scale(1.08)}
+.fab:active{transform:scale(.96)}
+.fab i{color:#fff;font-size:24px}
+/* ── Modal ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:380px;max-width:calc(100vw - 32px);animation:mdIn .22s ease}
+@keyframes mdIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.modal-title{font-size:16px;font-weight:600;color:#111827;margin-bottom:22px}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;font-size:12px;font-weight:500;color:#6b7280;margin-bottom:5px}
+.form-group input,.form-group select{width:100%;padding:9px 12px;font-size:13.5px;border:1px solid #e5e7eb;border-radius:9px;outline:none;font-family:inherit;color:#111827;background:#fff;transition:border-color .15s}
+.form-group input:focus,.form-group select:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;gap:10px;margin-top:22px}
+.btn-cancel{flex:1;padding:10px;border:1px solid #e5e7eb;border-radius:9px;background:#fff;font-size:13.5px;font-weight:500;color:#6b7280;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-cancel:hover{background:#f9fafb}
+.btn-save{flex:1;padding:10px;border:none;border-radius:9px;background:#10b981;font-size:13.5px;font-weight:500;color:#fff;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-save:hover{background:#059669}
+.btn-save:active{background:#047857}
+/* ── Responsive ── */
+@media(max-width:780px){.cards{grid-template-columns:repeat(2,1fr)}.charts-row{grid-template-columns:1fr}}
+@media(max-width:480px){.cards{grid-template-columns:1fr}.nav{padding:0 16px}.page{padding:20px 12px 80px}}
+.link-btn{font-size:12px;font-weight:500;color:#10b981;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;font-family:inherit;transition:color .15s}
+.link-btn:hover{color:#059669}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <div class="logo-mark"><i class="ti ti-wallet"></i></div>
+    <span class="app-name">Expense Tracker</span>
+  </div>
+  <div class="nav-right">
+    <div class="nav-pill"><i class="ti ti-calendar"></i> <span id="nav-month">June 2026</span></div>
+    <div class="avatar"><i class="ti ti-user"></i></div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="greeting">
+    <p>Here's your financial summary</p>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon ci-green"><i class="ti ti-credit-card"></i></div>
+      <div class="card-label">Total balance</div>
+      <div class="card-value" id="s-bal">₹0</div>
+      <div class="card-delta" id="s-bal-d">This month</div>
+    </div>
+    <div class="card">
+      <div class="card-icon ci-blue"><i class="ti ti-arrow-down-circle"></i></div>
+      <div class="card-label">Income</div>
+      <div class="card-value" id="s-inc">₹0</div>
+      <div class="card-delta up" id="s-inc-d"><i class="ti ti-trending-up" style="font-size:13px"></i> This month</div>
+    </div>
+    <div class="card">
+      <div class="card-icon ci-red"><i class="ti ti-arrow-up-circle"></i></div>
+      <div class="card-label">Expenses</div>
+      <div class="card-value" id="s-exp">₹0</div>
+      <div class="card-delta dn" id="s-exp-d"><i class="ti ti-trending-down" style="font-size:13px"></i> This month</div>
+    </div>
+    <div class="card">
+      <div class="card-icon ci-amber"><i class="ti ti-piggy-bank"></i></div>
+      <div class="card-label">Savings</div>
+      <div class="card-value" id="s-sav">₹0</div>
+      <div class="card-delta up" id="s-sav-d"><i class="ti ti-trending-up" style="font-size:13px"></i> —</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-row">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Monthly overview</div>
+          <div class="panel-sub">Jan – Jun 2026</div>
+        </div>
+        <div class="legend-row">
+          <div class="leg"><div class="leg-sq" style="background:#10b981"></div>Income</div>
+          <div class="leg"><div class="leg-sq" style="background:#f87171"></div>Expenses</div>
+        </div>
+      </div>
+      <div style="position:relative;height:210px">
+        <canvas id="barChart" role="img" aria-label="Bar chart comparing monthly income and expenses January through June 2026">Income ranged from 65000 to 70000. Expenses ranged from 38000 to 52000.</canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Spending categories</div>
+          <div class="panel-sub">This month</div>
+        </div>
+      </div>
+      <div class="pie-chart-wrap">
+        <div style="position:relative;height:140px;display:flex;align-items:center;justify-content:center">
+          <canvas id="pieChart" role="img" aria-label="Doughnut chart of this month's spending by category">Housing 41%, Food 16%, Transport 8%, Health 5%, Entertainment 1%, Other 29%.</canvas>
+        </div>
+        <div class="pie-legend" id="pie-legend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions -->
+  <div class="tx-panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Recent transactions</div>
+        <div class="panel-sub" id="tx-sub">—</div>
+      </div>
+      <button class="link-btn" onclick="openModal()"><i class="ti ti-plus"></i> Add new</button>
+    </div>
+    <div class="tx-wrap">
+      <table class="tx-table" aria-label="Recent transactions list">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tx-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openModal()" aria-label="Add expense">
+  <i class="ti ti-plus"></i>
+</button>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">Add transaction</div>
+    <div class="form-group">
+      <label>Description *</label>
+      <input type="text" id="f-desc" placeholder="e.g. Grocery run">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Amount (₹) *</label>
+        <input type="number" id="f-amt" placeholder="0" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="f-type">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="f-cat">
+          <option>Housing</option>
+          <option>Food & dining</option>
+          <option>Transport</option>
+          <option>Health</option>
+          <option>Entertainment</option>
+          <option>Shopping</option>
+          <option>Education</option>
+          <option>Salary</option>
+          <option>Freelance</option>
+          <option>Investment</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date *</label>
+        <input type="date" id="f-date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="f-status">
+        <option value="completed">Completed</option>
+        <option value="pending">Pending</option>
+        <option value="failed">Failed</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="addTx()">Save transaction</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── Config ──────────────────────────────────────────
+const CAT_META = {
+  'Housing':       { icon:'ti-home',            bg:'#ede9fe', ic:'#7c3aed' },
+  'Food & dining': { icon:'ti-tools-kitchen-2', bg:'#ffedd5', ic:'#ea580c' },
+  'Transport':     { icon:'ti-car',             bg:'#dbeafe', ic:'#2563eb' },
+  'Health':        { icon:'ti-heart-rate',      bg:'#fce7f3', ic:'#db2777' },
+  'Entertainment': { icon:'ti-device-tv',       bg:'#e0f2fe', ic:'#0284c7' },
+  'Shopping':      { icon:'ti-shopping-bag',    bg:'#fef3c7', ic:'#d97706' },
+  'Education':     { icon:'ti-school',          bg:'#d1fae5', ic:'#059669' },
+  'Salary':        { icon:'ti-briefcase',       bg:'#d1fae5', ic:'#059669' },
+  'Freelance':     { icon:'ti-laptop',          bg:'#e0f2fe', ic:'#0369a1' },
+  'Investment':    { icon:'ti-chart-line',      bg:'#f5f3ff', ic:'#6d28d9' },
+  'Other':         { icon:'ti-circle-dot',      bg:'#f1f5f9', ic:'#64748b' },
+};
+const PIE_COLORS = ['#10b981','#f87171','#60a5fa','#fbbf24','#c084fc','#94a3b8'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ── State ────────────────────────────────────────────
+function loadData() {
+  try { return JSON.parse(localStorage.getItem('spendly_tx')) || defaultTx(); }
+  catch { return defaultTx(); }
+}
+function saveData() { localStorage.setItem('spendly_tx', JSON.stringify(transactions)); }
+
+function defaultTx() {
+  const y = new Date().getFullYear();
+  const m = String(new Date().getMonth() + 1).padStart(2,'0');
+  const ym = y + '-' + m;
+  return [
+    { desc:'Monthly rent',    cat:'Housing',       type:'expense', amt:18000, date:ym+'-01', status:'completed' },
+    { desc:'June salary',     cat:'Salary',        type:'income',  amt:65000, date:ym+'-01', status:'completed' },
+    { desc:'Grocery run',     cat:'Food & dining', type:'expense', amt:2800,  date:ym+'-05', status:'completed' },
+    { desc:'Petrol',          cat:'Transport',     type:'expense', amt:1500,  date:ym+'-08', status:'completed' },
+    { desc:'Netflix',         cat:'Entertainment', type:'expense', amt:499,   date:ym+'-10', status:'completed' },
+    { desc:'Pharmacy',        cat:'Health',        type:'expense', amt:920,   date:ym+'-14', status:'completed' },
+    { desc:'Freelance work',  cat:'Freelance',     type:'income',  amt:12000, date:ym+'-18', status:'pending'   },
+  ];
+}
+
+let transactions = loadData();
+
+// ── Helpers ──────────────────────────────────────────
+function fmt(n) { return '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN'); }
+function fmtDate(d) {
+  const p = d.split('-');
+  return p[2] + ' ' + MONTHS[+p[1]-1] + ' ' + p[0];
+}
+
+// ── Stats ─────────────────────────────────────────────
+function renderCards() {
+  const inc = transactions.filter(t => t.type === 'income').reduce((a, t) => a + t.amt, 0);
+  const exp = transactions.filter(t => t.type === 'expense').reduce((a, t) => a + t.amt, 0);
+  const bal = inc - exp;
+  const sav = Math.max(inc - exp, 0);
+  const savPct = inc > 0 ? Math.round(sav / inc * 100) : 0;
+  const expPct = inc > 0 ? Math.round(exp / inc * 100) : 0;
+
+  document.getElementById('s-bal').textContent = fmt(bal);
+  document.getElementById('s-inc').textContent = fmt(inc);
+  document.getElementById('s-exp').textContent = fmt(exp);
+  document.getElementById('s-sav').textContent = fmt(sav);
+  document.getElementById('s-sav-d').innerHTML = `<i class="ti ti-trending-up" style="font-size:13px"></i> ${savPct}% of income`;
+  document.getElementById('s-exp-d').innerHTML = `<i class="ti ti-trending-down" style="font-size:13px"></i> ${expPct}% of income`;
+}
+
+// ── Transactions table ────────────────────────────────
+function renderTx() {
+  const body = document.getElementById('tx-body');
+  const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
+  document.getElementById('tx-sub').textContent = sorted.length + ' transaction' + (sorted.length !== 1 ? 's' : '');
+
+  if (!sorted.length) {
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:28px;font-size:13px;color:#9ca3af">No transactions yet. Add one with the + button below.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = sorted.map(t => {
+    const m = CAT_META[t.cat] || CAT_META['Other'];
+    const neg = t.type === 'expense';
+    return `<tr>
+      <td><div class="tx-cat">
+        <div class="tx-cat-icon" style="background:${m.bg}"><i class="ti ${m.icon}" style="color:${m.ic};font-size:16px"></i></div>
+        <div>
+          <div class="tx-cat-name">${esc(t.desc)}</div>
+          <div class="tx-cat-note">${t.cat}</div>
+        </div>
+      </div></td>
+      <td class="tx-date">${fmtDate(t.date)}</td>
+      <td class="tx-amt ${neg?'neg':'pos'}">${neg ? '−' : '+'}${fmt(t.amt)}</td>
+      <td><span class="badge ${t.status}">${t.status.charAt(0).toUpperCase()+t.status.slice(1)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Charts ────────────────────────────────────────────
+let barChart = null, pieChart = null;
+
+function renderCharts() {
+  // Pie / donut — spending categories this month
+  const now = new Date().toISOString().slice(0, 7);
+  const pieData = {};
+  transactions.filter(t => t.type === 'expense' && t.date.startsWith(now))
+    .forEach(t => { pieData[t.cat] = (pieData[t.cat] || 0) + t.amt; });
+
+  const pieEntries = Object.entries(pieData).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const pieTotal = pieEntries.reduce((a, e) => a + e[1], 0);
+
+  document.getElementById('pie-legend').innerHTML = pieEntries.map(([cat, amt], i) => {
+    const pct = pieTotal ? Math.round(amt / pieTotal * 100) : 0;
+    return `<div class="pie-leg">
+      <div class="pie-leg-left">
+        <div class="pie-leg-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></div>
+        <span>${cat}</span>
+      </div>
+      <span class="pie-leg-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+
+  if (pieChart) pieChart.destroy();
+  if (barChart) barChart.destroy();
+
+  const pieCtx = document.getElementById('pieChart');
+  pieChart = new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+      labels: pieEntries.map(e => e[0]),
+      datasets: [{
+        data: pieEntries.length ? pieEntries.map(e => e[1]) : [1],
+        backgroundColor: pieEntries.length ? PIE_COLORS : ['#e5e7eb'],
+        borderWidth: 3,
+        borderColor: '#fff',
+        hoverBorderWidth: 3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.raw) } }
+      }
+    }
+  });
+
+  // Bar chart — last 6 months
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(); d.setMonth(d.getMonth() - i);
+    months.push(d.toISOString().slice(0, 7));
+  }
+  const incData = months.map(m => transactions.filter(t => t.type === 'income' && t.date.startsWith(m)).reduce((a, t) => a + t.amt, 0));
+  const expData = months.map(m => transactions.filter(t => t.type === 'expense' && t.date.startsWith(m)).reduce((a, t) => a + t.amt, 0));
+  const labels = months.map(m => MONTHS[+m.slice(5) - 1]);
+
+  const barCtx = document.getElementById('barChart');
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Income',   data:incData, backgroundColor:'#d1fae5', borderColor:'#10b981', borderWidth:1.5, borderRadius:5, borderSkipped:false },
+        { label:'Expenses', data:expData, backgroundColor:'#fee2e2', borderColor:'#f87171', borderWidth:1.5, borderRadius:5, borderSkipped:false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.raw) } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 12, family: 'Inter' }, color: '#9ca3af' } },
+        y: {
+          grid: { color: '#f3f4f6' },
+          border: { display: false },
+          ticks: { font: { size: 11, family: 'Inter' }, color: '#9ca3af', callback: v => '₹' + (v >= 1000 ? (v/1000) + 'k' : v) }
+        }
+      }
+    }
+  });
+}
+
+// ── Modal ─────────────────────────────────────────────
+function openModal() {
+  document.getElementById('f-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-amt').value = '';
+  document.getElementById('f-type').value = 'expense';
+  document.getElementById('f-status').value = 'completed';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('f-desc').focus(), 80);
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function addTx() {
+  const desc = document.getElementById('f-desc').value.trim();
+  const amt  = parseFloat(document.getElementById('f-amt').value);
+  const type = document.getElementById('f-type').value;
+  const cat  = document.getElementById('f-cat').value;
+  const date = document.getElementById('f-date').value;
+  const status = document.getElementById('f-status').value;
+
+  if (!desc) { document.getElementById('f-desc').focus(); return; }
+  if (!amt || amt <= 0) { document.getElementById('f-amt').focus(); return; }
+  if (!date) { document.getElementById('f-date').focus(); return; }
+
+  transactions.unshift({ desc, cat, type, amt, date, status });
+  saveData();
+  closeModal();
+  renderCards();
+  renderTx();
+  renderCharts();
+}
+
+// Keyboard: Esc closes modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Init ──────────────────────────────────────────────
+renderCards();
+renderTx();
+renderCharts();
+</script>
+</body>
+</html>
