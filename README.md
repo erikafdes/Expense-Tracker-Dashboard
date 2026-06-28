@@ -6,7 +6,7 @@ Intern ID: CITS3717
 Full Name : Erika Fernandes             
 Week : 6                 
 ProjecT : Expense Tracker Dashboard        
-Domain : software engineering                  
+Domain : software development                
 
 
 
