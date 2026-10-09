@@ -46,6 +46,7 @@ A fully functional, client-side **Expense Tracker Dashboard** built as a single 
 - **Clear All Data** with confirmation
 ## 📸 Screenshots
 
-![Screenshot 1](<Screenshot 2026-06-29 000358.png>)
-![Screenshot 2](<Screenshot 2026-06-29 000343.png>)
-![Screenshot 3](<Screenshot 2026-06-29 000351.png>)
+### Screenshot
+![Dashboard](screenshots/Screenshot%202026-06-29%20000358.png)
+![Transactions](screenshots/Screenshot%202026-06-29%20000343.png)
+![Reports](screenshots/Screenshot%202026-06-29%20000351.png)

@@ -22,6 +22,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f8f9fb;min-height:100v
 .avatar{width:36px;height:36px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #a7f3d0;transition:border-color .15s}
 .avatar:hover{border-color:#10b981}
 .avatar i{color:#059669;font-size:18px}
+.avatar span{color:#059669;font-size:14px;font-weight:600;line-height:1;user-select:none}
 /* ── Page ── */
 .page{max-width:960px;margin:0 auto;padding:32px 24px 80px}
 .greeting{margin-bottom:26px}
@@ -115,12 +116,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f8f9fb;min-height:100v
   </div>
   <div class="nav-right">
     <div class="nav-pill"><i class="ti ti-calendar"></i> <span id="nav-month">June 2026</span></div>
-    <div class="avatar"><i class="ti ti-user"></i></div>
+    <div class="avatar" id="avatar" title="Profile"><span id="avatar-initials">U</span></div>
   </div>
 </nav>
 
 <div class="page">
   <div class="greeting">
+    <h2 id="greeting-title">Hello</h2>
     <p>Here's your financial summary</p>
   </div>
 
@@ -276,6 +278,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f8f9fb;min-height:100v
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 // ── Config ──────────────────────────────────────────
+// Change this to your name — it sets the greeting and the avatar initials.
+const USER_NAME = 'Ferna';
+
 const CAT_META = {
   'Housing':       { icon:'ti-home',            bg:'#ede9fe', ic:'#7c3aed' },
   'Food & dining': { icon:'ti-tools-kitchen-2', bg:'#ffedd5', ic:'#ea580c' },
@@ -292,29 +297,16 @@ const CAT_META = {
 const PIE_COLORS = ['#10b981','#f87171','#60a5fa','#fbbf24','#c084fc','#94a3b8'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// ── State ────────────────────────────────────────────
-function loadData() {
-  try { return JSON.parse(localStorage.getItem('spendly_tx')) || defaultTx(); }
-  catch { return defaultTx(); }
-}
-function saveData() { localStorage.setItem('spendly_tx', JSON.stringify(transactions)); }
+// ── State (backed by the MySQL API) ───────────────────
+const API = '/api/transactions';
+let transactions = [];
 
-function defaultTx() {
-  const y = new Date().getFullYear();
-  const m = String(new Date().getMonth() + 1).padStart(2,'0');
-  const ym = y + '-' + m;
-  return [
-    { desc:'Monthly rent',    cat:'Housing',       type:'expense', amt:18000, date:ym+'-01', status:'completed' },
-    { desc:'June salary',     cat:'Salary',        type:'income',  amt:65000, date:ym+'-01', status:'completed' },
-    { desc:'Grocery run',     cat:'Food & dining', type:'expense', amt:2800,  date:ym+'-05', status:'completed' },
-    { desc:'Petrol',          cat:'Transport',     type:'expense', amt:1500,  date:ym+'-08', status:'completed' },
-    { desc:'Netflix',         cat:'Entertainment', type:'expense', amt:499,   date:ym+'-10', status:'completed' },
-    { desc:'Pharmacy',        cat:'Health',        type:'expense', amt:920,   date:ym+'-14', status:'completed' },
-    { desc:'Freelance work',  cat:'Freelance',     type:'income',  amt:12000, date:ym+'-18', status:'pending'   },
-  ];
+// Fetch all transactions from the backend.
+async function loadData() {
+  const res = await fetch(API);
+  if (!res.ok) throw new Error('Failed to load transactions (HTTP ' + res.status + ')');
+  return res.json();
 }
-
-let transactions = loadData();
 
 // ── Helpers ──────────────────────────────────────────
 function fmt(n) { return '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN'); }
@@ -470,7 +462,7 @@ function openModal() {
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-function addTx() {
+async function addTx() {
   const desc = document.getElementById('f-desc').value.trim();
   const amt  = parseFloat(document.getElementById('f-amt').value);
   const type = document.getElementById('f-type').value;
@@ -482,21 +474,66 @@ function addTx() {
   if (!amt || amt <= 0) { document.getElementById('f-amt').focus(); return; }
   if (!date) { document.getElementById('f-date').focus(); return; }
 
-  transactions.unshift({ desc, cat, type, amt, date, status });
-  saveData();
-  closeModal();
-  renderCards();
-  renderTx();
-  renderCharts();
+  const saveBtn = document.querySelector('.btn-save');
+  saveBtn.disabled = true;
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ desc, cat, type, amt, date, status })
+    });
+    if (!res.ok) throw new Error('save failed (HTTP ' + res.status + ')');
+    const saved = await res.json();     // row returned by the API, incl. its DB id
+    transactions.unshift(saved);
+    closeModal();
+    renderCards();
+    renderTx();
+    renderCharts();
+  } catch (err) {
+    console.error(err);
+    alert('Could not save the transaction. Is the server running?');
+  } finally {
+    saveBtn.disabled = false;
+  }
 }
 
 // Keyboard: Esc closes modal
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+// ── Header (current month, greeting, avatar) ──────────
+function renderHeader() {
+  const now = new Date();
+  // Calendar pill → real current month, e.g. "September 2026"
+  document.getElementById('nav-month').textContent =
+    now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  // Avatar initials from the name (up to 2 letters)
+  const initials = USER_NAME.trim().split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+  document.getElementById('avatar-initials').textContent = initials || 'U';
+  document.getElementById('avatar').title = USER_NAME;
+
+  // Time-based greeting
+  const h = now.getHours();
+  const salute = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greeting-title').textContent = `${salute}, ${USER_NAME}`;
+}
+
 // ── Init ──────────────────────────────────────────────
-renderCards();
-renderTx();
-renderCharts();
+async function init() {
+  renderHeader();
+  try {
+    transactions = await loadData();
+  } catch (err) {
+    console.error(err);
+    transactions = [];
+    document.getElementById('tx-sub').textContent =
+      'Could not reach the server — is it running?';
+  }
+  renderCards();
+  renderTx();
+  renderCharts();
+}
+init();
 </script>
 </body>
 </html>
